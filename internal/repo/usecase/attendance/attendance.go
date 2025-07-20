@@ -118,6 +118,24 @@ func (u *Usecase) SubmitOvertime(ctx context.Context, overtimeRequest model.Subm
 		return
 	}
 
+	if !isWeekend(overtimeRequest.OvertimeDate) {
+
+		// check if user attended on the overtime date during business days
+		mstAttendance, e := u.AttendanceDB.GetAttendance(ctx, model.MstAttendance{
+			IDMstUser:      user.ID,
+			AttendanceDate: overtimeRequest.OvertimeDate,
+		})
+		if e != nil {
+			err = errors.Wrap(e, "Usecase.SubmitOvertime")
+			return
+		}
+
+		if mstAttendance.ID == 0 {
+			err = commonerr.SetNewBadRequest("invalid", "user did not attend on the overtime date")
+			return
+		}
+	}
+
 	if overtimeRequest.Hours > MaxOvertimeHours {
 		overtimeRequest.Hours = MaxOvertimeHours
 	}
