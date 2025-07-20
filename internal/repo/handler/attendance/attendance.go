@@ -51,3 +51,22 @@ func (h *AttendanceHandler) CreatePayrollPeriod(w http.ResponseWriter, r *http.R
 
 	commonwriter.SetOKWithData(ctx, w, resp)
 }
+
+func (h *AttendanceHandler) SubmitOvertime(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	req := model.SubmitOvertimeRequest{}
+	err := bindingBind(r, &req)
+	if err != nil {
+		commonwriter.SetError(ctx, w, err)
+		return
+	}
+
+	resp, err := h.AttendanceUsecase.SubmitOvertime(ctx, req)
+	if err != nil {
+		commonwriter.SetError(ctx, w, err)
+		return
+	}
+
+	commonwriter.SetOKWithData(ctx, w, resp)
+}

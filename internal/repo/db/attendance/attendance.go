@@ -11,6 +11,7 @@ import (
 const (
 	MstAttendanceTable    = "mst_attendance"
 	MstPayrollPeriodTable = "mst_payroll_period"
+	TrxOvertime           = "trx_overtime"
 
 	WrapMsgCreate = "conn.Create"
 )
@@ -48,4 +49,22 @@ func (c *Conn) CreatePayrollPeriod(ctx context.Context, payrolPeriod *model.MstP
 		return errors.Wrap(err, "conn.CreatePayrollPeriod")
 	}
 	return nil
+}
+
+func (c *Conn) SubmitOvertime(ctx context.Context, overtime *model.TrxOvertime) (err error) {
+	session := c.DB.MasterDB.Table(TrxOvertime)
+	session.InsertOne(overtime)
+	if err != nil {
+		return errors.Wrap(err, "conn.SubmitOvertime")
+	}
+	return nil
+}
+
+func (c *Conn) GetOvertime(ctx context.Context, params model.TrxOvertime) (res model.TrxOvertime, err error) {
+	session := c.DB.MasterDB.Table(TrxOvertime)
+	_, err = session.Where("id_mst_user = ? AND overtime_date = ?", params.UserID, params.OvertimeDate.Format("2006-01-02")).Get(&res)
+	if err != nil {
+		return res, errors.Wrap(err, "conn.GetOvertime")
+	}
+	return res, nil
 }

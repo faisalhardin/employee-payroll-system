@@ -12,6 +12,10 @@ import (
 	"github.com/pkg/errors"
 )
 
+const (
+	MaxOvertimeHours = 3
+)
+
 type Usecase struct {
 	AttendanceDB *attendaceDB.Conn
 }
@@ -104,5 +108,54 @@ func (u *Usecase) CreatePayrollPeriod(ctx context.Context, payrollPeriodRequest 
 		EndDate:            mstPayrollPeriod.EndDate,
 		IsPayrollProcessed: mstPayrollPeriod.IsPayrollProcessed,
 	}
+	return
+}
+
+func (u *Usecase) SubmitOvertime(ctx context.Context, overtimeRequest model.SubmitOvertimeRequest) (resp model.SubmitOvertimeResponse, err error) {
+	user, found := auth.GetUserDetailFromCtx(ctx)
+	if !found {
+		err = errors.Wrap(errors.New("forbidden"), "Usecase.CreatePayrollPeriod")
+		return
+	}
+
+	if overtimeRequest.Hours > MaxOvertimeHours {
+		overtimeRequest.Hours = MaxOvertimeHours
+	}
+
+	overtime := &model.TrxOvertime{
+		UserID:       user.ID,
+		OvertimeDate: overtimeRequest.OvertimeDate,
+	}
+
+	// check if overtime already submitted for this date
+	existingOvertime, err := u.AttendanceDB.GetOvertime(ctx, *overtime)
+	if err != nil {
+		err = errors.Wrap(err, "Usecase.SubmitOvertime")
+		return
+	}
+
+	if existingOvertime.ID != 0 {
+		err = commonerr.SetNewBadRequest("invalid", "overtime already submitted for this date")
+		return
+	}
+
+	// complete for insertion
+	overtime.Hours = overtimeRequest.Hours
+	overtime.CreatedBy = sql.NullInt64{
+		Int64: user.ID,
+		Valid: true,
+	}
+
+	err = u.AttendanceDB.SubmitOvertime(ctx, overtime)
+	if err != nil {
+		err = errors.Wrap(err, "Usecase.SubmitOvertime")
+		return
+	}
+
+	resp = model.SubmitOvertimeResponse{
+		OvertimeDate: overtimeRequest.OvertimeDate,
+		Hours:        overtimeRequest.Hours,
+	}
+
 	return
 }

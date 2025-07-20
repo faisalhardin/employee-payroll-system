@@ -44,17 +44,27 @@ type PayrollPeriodRequest struct {
 	EndDate   time.Time `json:"end_date" xorm:"end_date" validate:"required,gtfield=StartDate"`
 }
 
-// Overtime represents overtime submissions
+// TrxOvertime represents overtime submissions
 type TrxOvertime struct {
-	ID                 int64         `json:"id" xorm:"id"`
-	UserID             int64         `json:"user_id" xorm:"user_id"`
-	IDMstPayrollPeriod int64         `json:"id_mst_payroll_period" xorm:"id_mst_payroll_period"`
-	OvertimeDate       time.Time     `json:"overtime_date" xorm:"overtime_date"`
-	Hours              float64       `json:"hours" xorm:"hours"`
-	CreatedAt          time.Time     `json:"created_at" xorm:"created_at"`
-	UpdatedAt          time.Time     `json:"updated_at" xorm:"updated_at"`
-	CreatedBy          sql.NullInt64 `json:"created_by,omitempty" xorm:"created_by"`
-	UpdatedBy          sql.NullInt64 `json:"updated_by,omitempty" xorm:"updated_by"`
+	ID                 int64         `xorm:"'id' pk autoincr"`
+	UserID             int64         `xorm:"id_mst_user"`
+	IDMstPayrollPeriod sql.NullInt64 `xorm:"id_mst_payroll_period"`
+	OvertimeDate       time.Time     `xorm:"overtime_date"`
+	Hours              int           `xorm:"hours"`
+	CreatedAt          time.Time     `xorm:"'created_at' created"`
+	UpdatedAt          time.Time     `xorm:"'updated_at' updated"`
+	CreatedBy          sql.NullInt64 `xorm:"created_by"`
+	UpdatedBy          sql.NullInt64 `xorm:"updated_by"`
+}
+
+type SubmitOvertimeRequest struct {
+	OvertimeDate time.Time `json:"overtime_date" validate:"required"`
+	Hours        int       `json:"hours" validate:"required,gt=0"`
+}
+
+type SubmitOvertimeResponse struct {
+	OvertimeDate time.Time `json:"overtime_date"`
+	Hours        int       `json:"hours"`
 }
 
 // Reimbursement represents reimbursement requests
