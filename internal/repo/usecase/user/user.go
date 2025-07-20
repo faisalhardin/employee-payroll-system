@@ -6,8 +6,8 @@ import (
 
 	"github.com/faisalhardin/employee-payroll-system/internal/config"
 	"github.com/faisalhardin/employee-payroll-system/internal/entity/model"
-	"github.com/faisalhardin/employee-payroll-system/internal/repo/auth"
 	"github.com/faisalhardin/employee-payroll-system/internal/repo/db/user"
+	"github.com/faisalhardin/employee-payroll-system/pkg/middlewares/auth"
 	"github.com/pkg/errors"
 )
 
@@ -35,7 +35,7 @@ func (u *Usecase) SignIn(ctx context.Context, params model.SignInRequest) (jwt s
 	currTime := time.Now()
 	expireDuration := time.Duration(u.Cfg.JWTConfig.DurationInHours) * time.Hour
 	expiredTime := currTime.Add(expireDuration)
-	token, err := u.AuthRepo.CreateJWTToken(ctx, model.UserJWTPayload{
+	token, err := u.AuthRepo.CreateJWTToken(ctx, auth.UserJWTPayload{
 		ID:       resp.ID,
 		Username: resp.Username,
 		Role:     resp.Role,

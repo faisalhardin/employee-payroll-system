@@ -5,15 +5,15 @@ import (
 	"time"
 
 	"github.com/cristalhq/jwt/v5"
-	"github.com/faisalhardin/employee-payroll-system/internal/config"
-	"github.com/faisalhardin/employee-payroll-system/internal/entity/model"
+	"github.com/faisalhardin/employee-payroll-system/pkg/common/commonerr"
 	"github.com/pkg/errors"
 )
 
 type Options struct {
-	Cfg *config.Config
+	Cfg *JWTConfig
 
-	JwtOpt JwtOpt
+	JwtOpt     JwtOpt
+	ServerHost string
 }
 
 type JwtOpt struct {
@@ -24,13 +24,25 @@ type JwtOpt struct {
 
 type Claims struct {
 	jwt.RegisteredClaims
-	Payload model.UserJWTPayload `json:"payload"`
+	Payload UserJWTPayload `json:"payload"`
 }
 
-func New(opt *Options) (*Options, error) {
+func (claims Claims) Verify() (err error) {
 
+	if claims.ExpiresAt != nil && time.Now().After(claims.ExpiresAt.Time) {
+		return commonerr.SetNewTokenExpiredError()
+	}
+
+	return nil
+}
+
+func New(cfg *JWTConfig) (*Options, error) {
+
+	opt := &Options{
+		Cfg: cfg,
+	}
 	opt.JwtOpt = JwtOpt{
-		JWTPrivateKey: opt.Cfg.JWTConfig.Credentials.Secret,
+		JWTPrivateKey: cfg.Credentials.Secret,
 	}
 
 	// Create signer
@@ -49,12 +61,12 @@ func New(opt *Options) (*Options, error) {
 	return opt, nil
 }
 
-func (opt *Options) CreateJWTToken(ctx context.Context, payload model.UserJWTPayload, timeNow, timeExpired time.Time) (tokenStr string, err error) {
+func (opt *Options) CreateJWTToken(ctx context.Context, payload UserJWTPayload, timeNow, timeExpired time.Time) (tokenStr string, err error) {
 
 	claims := Claims{
 		RegisteredClaims: jwt.RegisteredClaims{
-			Issuer:    opt.Cfg.Server.Host,
-			Audience:  jwt.Audience{opt.Cfg.Server.Host},
+			Issuer:    opt.Cfg.ServerHost,
+			Audience:  jwt.Audience{opt.Cfg.ServerHost},
 			ExpiresAt: jwt.NewNumericDate(timeExpired),
 			IssuedAt:  jwt.NewNumericDate(timeNow),
 		},

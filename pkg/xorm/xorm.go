@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/go-xorm/xorm"
+	_ "github.com/lib/pq"
 	"xorm.io/core"
 )
 
@@ -40,7 +41,7 @@ func generateXormEngineInstance(dsn string) (*xorm.Engine, error) {
 
 	// Ping the database to verify the connection
 	if err := engine.Ping(); err != nil {
-		return nil, fmt.Errorf("failed to connect to database: %v", err)
+		return nil, err
 	}
 
 	engine.SetTableMapper(core.GonicMapper{})

@@ -32,7 +32,8 @@ func (h *UserHandler) SignIn(w http.ResponseWriter, r *http.Request) {
 	}
 	token, err := h.UserUsecase.SignIn(ctx, request)
 	if err != nil {
-
+		commonwriter.SetError(ctx, w, err)
+		return
 	}
 
 	commonwriter.SetOKWithData(ctx, w, token)

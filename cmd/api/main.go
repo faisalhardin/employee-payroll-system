@@ -12,11 +12,14 @@ import (
 	"github.com/faisalhardin/employee-payroll-system/internal/config"
 	"github.com/faisalhardin/employee-payroll-system/internal/server"
 
-	"github.com/faisalhardin/employee-payroll-system/internal/repo/auth"
+	attendancedb "github.com/faisalhardin/employee-payroll-system/internal/repo/db/attendance"
 	userdb "github.com/faisalhardin/employee-payroll-system/internal/repo/db/user"
+	"github.com/faisalhardin/employee-payroll-system/pkg/middlewares/auth"
 
+	attendanceusecase "github.com/faisalhardin/employee-payroll-system/internal/repo/usecase/attendance"
 	userusecase "github.com/faisalhardin/employee-payroll-system/internal/repo/usecase/user"
 
+	attendancehandler "github.com/faisalhardin/employee-payroll-system/internal/repo/handler/attendance"
 	userhandler "github.com/faisalhardin/employee-payroll-system/internal/repo/handler/user"
 
 	xormlib "github.com/faisalhardin/employee-payroll-system/pkg/xorm"
@@ -64,13 +67,14 @@ func main() {
 		return
 	}
 
-	authRepo, err := auth.New(&auth.Options{
-		Cfg: cfg,
-	})
+	authRepo, err := auth.New(&cfg.JWTConfig)
 	if err != nil {
 		log.Fatalf("failed to init auth repo: %v", err)
 		return
 	}
+	attendanceRepo := attendancedb.New(&attendancedb.Conn{
+		DB: db,
+	})
 
 	userDB := userdb.New(&userdb.Conn{
 		DB: db,
@@ -81,17 +85,26 @@ func main() {
 		UserDB:   userDB,
 		AuthRepo: authRepo,
 	})
+	attendanceUC := attendanceusecase.New(attendanceusecase.Usecase{
+		AttendanceDB: attendanceRepo,
+	})
 
 	userHandler := userhandler.New(&userhandler.UserHandler{
 		UserUsecase: userUC,
 	})
 
+	attendanceHandler := attendancehandler.New(&attendancehandler.AttendanceHandler{
+		AttendanceUsecase: attendanceUC,
+	})
+
 	handlers := &server.Handlers{
-		UserHandler: userHandler,
+		UserHandler:       userHandler,
+		AttendanceHandler: attendanceHandler,
 	}
 
 	server := server.NewServer(cfg, &server.Modules{
-		Handlers: handlers,
+		Handlers:       handlers,
+		AuthMiddleware: authRepo,
 	})
 
 	// Create a done channel to signal when the shutdown is complete

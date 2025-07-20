@@ -4,15 +4,15 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/faisalhardin/employee-payroll-system/pkg/common/log"
+	auth "github.com/faisalhardin/employee-payroll-system/pkg/middlewares/auth"
 	xormlib "github.com/faisalhardin/employee-payroll-system/pkg/xorm"
 	"gopkg.in/yaml.v3"
 )
 
 type Config struct {
-	Server    Server    `yaml:"server"`
-	JWTConfig JWTConfig `yaml:"jwt_config"`
-	DBConfig  DBConfig  `yaml:"db_config"`
+	Server    Server         `yaml:"server"`
+	JWTConfig auth.JWTConfig `yaml:"jwt_config"`
+	DBConfig  DBConfig       `yaml:"db_config"`
 }
 
 type DBConfig struct {
@@ -26,19 +26,10 @@ type Server struct {
 	BaseURL string `yaml:"base_url"`
 }
 
-type JWTConfig struct {
-	DurationInHours int           `yaml:"duration_in_hours"`
-	Credentials     JWTCredential `yaml:"jwt_credentials"`
-}
-
-type JWTCredential struct {
-	Secret string `yaml:"secret"`
-}
-
 func New(repoName string) (*Config, error) {
 	dir, _ := os.Getwd()
 	filename := "files/env/" + repoName + ".yaml"
-	log.Info(filename)
+
 	f, err := os.Open(fmt.Sprintf("%s/%s", dir, filename))
 	if err != nil {
 		return nil, err

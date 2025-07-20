@@ -22,8 +22,11 @@ func (s *Server) RegisterRoutes(m *Modules) http.Handler {
 		MaxAge:           300,
 	}))
 
-	r.Post("/v1/login", m.Handlers.UserHandler.SignIn)
-	r.Get("/", s.HelloWorldHandler)
+	r.Post("/login", m.Handlers.UserHandler.SignIn)
+	r.Route("/v1", func(v1 chi.Router) {
+		v1.Use(m.AuthMiddleware.AuthHandler)
+		v1.Post("/tap-in", m.Handlers.AttendanceHandler.TapIn)
+	})
 
 	return r
 }
