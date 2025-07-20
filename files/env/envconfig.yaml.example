@@ -1,0 +1,9 @@
+server:
+  name: "employee-service"
+  host: "127.0.0.1"
+  port: "8080"
+  base_url: ""
+
+
+jwt_config:
+  duration_in_hours: 720 #set as 1 month expiration time

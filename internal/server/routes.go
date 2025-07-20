@@ -10,7 +10,7 @@ import (
 	"github.com/go-chi/cors"
 )
 
-func (s *Server) RegisterRoutes() http.Handler {
+func (s *Server) RegisterRoutes(m *Modules) http.Handler {
 	r := chi.NewRouter()
 	r.Use(middleware.Logger)
 
@@ -22,9 +22,8 @@ func (s *Server) RegisterRoutes() http.Handler {
 		MaxAge:           300,
 	}))
 
+	r.Post("/v1/login", m.Handlers.UserHandler.SignIn)
 	r.Get("/", s.HelloWorldHandler)
-
-	r.Get("/health", s.healthHandler)
 
 	return r
 }
@@ -38,10 +37,5 @@ func (s *Server) HelloWorldHandler(w http.ResponseWriter, r *http.Request) {
 		log.Fatalf("error handling JSON marshal. Err: %v", err)
 	}
 
-	_, _ = w.Write(jsonResp)
-}
-
-func (s *Server) healthHandler(w http.ResponseWriter, r *http.Request) {
-	jsonResp, _ := json.Marshal(s.db.Health())
 	_, _ = w.Write(jsonResp)
 }

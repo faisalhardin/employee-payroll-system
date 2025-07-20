@@ -9,7 +9,17 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/faisalhardin/employee-payroll-system/internal/config"
 	"github.com/faisalhardin/employee-payroll-system/internal/server"
+
+	"github.com/faisalhardin/employee-payroll-system/internal/repo/auth"
+	userdb "github.com/faisalhardin/employee-payroll-system/internal/repo/db/user"
+
+	userusecase "github.com/faisalhardin/employee-payroll-system/internal/repo/usecase/user"
+
+	userhandler "github.com/faisalhardin/employee-payroll-system/internal/repo/handler/user"
+
+	xormlib "github.com/faisalhardin/employee-payroll-system/pkg/xorm"
 )
 
 func gracefulShutdown(apiServer *http.Server, done chan bool) {
@@ -39,7 +49,50 @@ func gracefulShutdown(apiServer *http.Server, done chan bool) {
 
 func main() {
 
-	server := server.NewServer()
+	loc, _ := time.LoadLocation("Asia/Jakarta")
+	time.Local = loc
+
+	// init config
+	cfg, err := config.New("envconfig")
+	if err != nil {
+		log.Fatalf("failed to init the config: %v", err)
+	}
+
+	db, err := xormlib.NewDBConnection(cfg.DBConfig.DBMaster)
+	if err != nil {
+		log.Fatalf("failed to init db: %v", err)
+		return
+	}
+
+	authRepo, err := auth.New(&auth.Options{
+		Cfg: cfg,
+	})
+	if err != nil {
+		log.Fatalf("failed to init auth repo: %v", err)
+		return
+	}
+
+	userDB := userdb.New(&userdb.Conn{
+		DB: db,
+	})
+
+	userUC := userusecase.New(&userusecase.Usecase{
+		Cfg:      cfg,
+		UserDB:   userDB,
+		AuthRepo: authRepo,
+	})
+
+	userHandler := userhandler.New(&userhandler.UserHandler{
+		UserUsecase: userUC,
+	})
+
+	handlers := &server.Handlers{
+		UserHandler: userHandler,
+	}
+
+	server := server.NewServer(cfg, &server.Modules{
+		Handlers: handlers,
+	})
 
 	// Create a done channel to signal when the shutdown is complete
 	done := make(chan bool, 1)
@@ -47,7 +100,7 @@ func main() {
 	// Run graceful shutdown in a separate goroutine
 	go gracefulShutdown(server, done)
 
-	err := server.ListenAndServe()
+	err = server.ListenAndServe()
 	if err != nil && err != http.ErrServerClosed {
 		panic(fmt.Sprintf("http server error: %s", err))
 	}

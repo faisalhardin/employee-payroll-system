@@ -16,8 +16,11 @@ require (
 )
 
 require (
+	github.com/modern-go/concurrent v0.0.0-20180228061459-e0a39a4cb421 // indirect
+	github.com/modern-go/reflect2 v1.0.2 // indirect
+	google.golang.org/genproto/googleapis/api v0.0.0-20250603155806-513f23925822 // indirect
+	google.golang.org/genproto/googleapis/rpc v0.0.0-20250603155806-513f23925822 // indirect
 	xorm.io/builder v0.3.6 // indirect
-	xorm.io/core v0.7.2-0.20190928055935-90aeac8d08eb // indirect
 )
 
 require (
@@ -30,6 +33,7 @@ require (
 	github.com/containerd/log v0.1.0 // indirect
 	github.com/containerd/platforms v0.2.1 // indirect
 	github.com/cpuguy83/dockercfg v0.3.2 // indirect
+	github.com/cristalhq/jwt/v5 v5.4.0
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/distribution/reference v0.6.0 // indirect
 	github.com/docker/docker v28.3.2+incompatible // indirect
@@ -41,7 +45,7 @@ require (
 	github.com/go-logr/logr v1.4.3 // indirect
 	github.com/go-logr/stdr v1.2.2 // indirect
 	github.com/go-ole/go-ole v1.3.0 // indirect
-	github.com/go-playground/locales v0.14.1 // indirect
+	github.com/go-playground/locales v0.14.1
 	github.com/go-xorm/xorm v0.7.9
 	github.com/gogo/protobuf v1.3.2 // indirect
 	github.com/google/uuid v1.6.0 // indirect
@@ -85,5 +89,17 @@ require (
 	golang.org/x/text v0.27.0 // indirect
 	google.golang.org/grpc v1.73.0 // indirect
 	google.golang.org/protobuf v1.36.6 // indirect
-	gopkg.in/yaml.v3 v3.0.1 // indirect
+	gopkg.in/yaml.v3 v3.0.1
+)
+
+exclude (
+	google.golang.org/genproto v0.0.0-20190307195333-5fe7a883aa19
+	google.golang.org/genproto v0.0.0-20190404172233-64821d5d2107
+)
+
+require (
+	github.com/gorilla/schema v1.4.1
+	github.com/json-iterator/go v1.1.12
+	github.com/lib/pq v1.10.9
+	xorm.io/core v0.7.2-0.20190928055935-90aeac8d08eb
 )
