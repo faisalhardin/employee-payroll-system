@@ -26,6 +26,7 @@ func (s *Server) RegisterRoutes(m *Modules) http.Handler {
 	r.Route("/v1", func(v1 chi.Router) {
 		v1.Use(m.AuthMiddleware.AuthHandler)
 		v1.Post("/tap-in", m.Handlers.AttendanceHandler.TapIn)
+		v1.Post("/payroll-period", m.Handlers.AttendanceHandler.CreatePayrollPeriod)
 	})
 
 	return r

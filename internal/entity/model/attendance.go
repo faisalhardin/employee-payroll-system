@@ -7,13 +7,13 @@ import (
 
 // MstAttendance represents employee attendance records
 type MstAttendance struct {
-	ID             int64         `json:"id" xorm:"id"`
+	ID             int64         `json:"id" xorm:"'id' pk autoincr"`
 	IDMstUser      int64         `json:"user_id" xorm:"id_mst_user"`
 	AttendanceDate time.Time     `json:"attendance_date" xorm:"attendance_date"`
 	CreatedAt      time.Time     `json:"created_at" xorm:"'created_at' created"`
 	UpdatedAt      time.Time     `json:"updated_at" xorm:"'updated_at' updated"`
 	CreatedBy      sql.NullInt64 `json:"created_by,omitempty" xorm:"created_by"`
-	UpdatedBy      *int64        `json:"updated_by,omitempty" xorm:"updated_by"`
+	UpdatedBy      sql.NullInt64 `json:"updated_by,omitempty" xorm:"updated_by"`
 }
 
 type TapInResponse struct {
@@ -22,14 +22,26 @@ type TapInResponse struct {
 
 // MstPayrollPeriod represents payroll periods
 type MstPayrollPeriod struct {
-	ID                 int64         `json:"id" xorm:"id"`
+	ID                 int64         `json:"id" xorm:"'id' pk autoincr"`
 	StartDate          time.Time     `json:"start_date" xorm:"start_date"`
 	EndDate            time.Time     `json:"end_date" xorm:"end_date"`
 	IsPayrollProcessed bool          `json:"is_payroll_processed" xorm:"is_payroll_processed"`
-	CreatedAt          time.Time     `json:"created_at" xorm:"created_at"`
-	UpdatedAt          time.Time     `json:"updated_at" xorm:"updated_at"`
+	CreatedAt          time.Time     `json:"created_at" xorm:"'created_at' created"`
+	UpdatedAt          time.Time     `json:"updated_at" xorm:"'updated_at' updated"`
 	CreatedBy          sql.NullInt64 `json:"created_by,omitempty" xorm:"created_by"`
 	UpdatedBy          sql.NullInt64 `json:"updated_by,omitempty" xorm:"updated_by"`
+}
+
+type PayrollPeriodResponse struct {
+	ID                 int64     `json:"id" xorm:"id"`
+	StartDate          time.Time `json:"start_date" xorm:"start_date"`
+	EndDate            time.Time `json:"end_date" xorm:"end_date"`
+	IsPayrollProcessed bool      `json:"is_payroll_processed" xorm:"is_payroll_processed"`
+}
+
+type PayrollPeriodRequest struct {
+	StartDate time.Time `json:"start_date" xorm:"start_date" validate:"required"`
+	EndDate   time.Time `json:"end_date" xorm:"end_date" validate:"required,gtfield=StartDate"`
 }
 
 // Overtime represents overtime submissions

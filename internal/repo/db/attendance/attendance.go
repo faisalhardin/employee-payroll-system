@@ -9,7 +9,8 @@ import (
 )
 
 const (
-	MstAttendanceTable = "mst_attendance"
+	MstAttendanceTable    = "mst_attendance"
+	MstPayrollPeriodTable = "mst_payroll_period"
 
 	WrapMsgCreate = "conn.Create"
 )
@@ -22,7 +23,7 @@ func New(conn *Conn) *Conn {
 	return conn
 }
 
-func (c *Conn) Create(ctx context.Context, attendance *model.MstAttendance) error {
+func (c *Conn) RecordAttendance(ctx context.Context, attendance *model.MstAttendance) error {
 	session := c.DB.MasterDB.Table(MstAttendanceTable)
 	_, err := session.InsertOne(attendance)
 	if err != nil {
@@ -38,4 +39,13 @@ func (c *Conn) GetAttendance(ctx context.Context, params model.MstAttendance) (r
 		return res, errors.Wrap(err, "conn.GetAttendance")
 	}
 	return res, nil
+}
+
+func (c *Conn) CreatePayrollPeriod(ctx context.Context, payrolPeriod *model.MstPayrollPeriod) (err error) {
+	session := c.DB.MasterDB.Table(MstPayrollPeriodTable)
+	session.InsertOne(payrolPeriod)
+	if err != nil {
+		return errors.Wrap(err, "conn.CreatePayrollPeriod")
+	}
+	return nil
 }

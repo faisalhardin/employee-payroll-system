@@ -32,3 +32,22 @@ func (h *AttendanceHandler) TapIn(w http.ResponseWriter, r *http.Request) {
 
 	commonwriter.SetOKWithData(ctx, w, resp)
 }
+
+func (h *AttendanceHandler) CreatePayrollPeriod(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	req := model.PayrollPeriodRequest{}
+	err := bindingBind(r, &req)
+	if err != nil {
+		commonwriter.SetError(ctx, w, err)
+		return
+	}
+
+	resp, err := h.AttendanceUsecase.CreatePayrollPeriod(ctx, req)
+	if err != nil {
+		commonwriter.SetError(ctx, w, err)
+		return
+	}
+
+	commonwriter.SetOKWithData(ctx, w, resp)
+}

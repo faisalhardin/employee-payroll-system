@@ -2,6 +2,7 @@ package attendance
 
 import (
 	"context"
+	"database/sql"
 	"time"
 
 	"github.com/faisalhardin/employee-payroll-system/internal/entity/model"
@@ -52,7 +53,7 @@ func (u *Usecase) TapIn(ctx context.Context, tapInRequest model.MstAttendance) (
 		}
 		return
 	}
-	err = u.AttendanceDB.Create(ctx, mstAttendace)
+	err = u.AttendanceDB.RecordAttendance(ctx, mstAttendace)
 	if err != nil {
 		err = errors.Wrap(err, "Usecase.TapIn")
 		return
@@ -67,4 +68,41 @@ func (u *Usecase) TapIn(ctx context.Context, tapInRequest model.MstAttendance) (
 func isWeekend(t time.Time) bool {
 	weekday := t.Weekday()
 	return weekday == time.Saturday || weekday == time.Sunday
+}
+
+func (u *Usecase) CreatePayrollPeriod(ctx context.Context, payrollPeriodRequest model.PayrollPeriodRequest) (resp model.PayrollPeriodResponse, err error) {
+
+	user, found := auth.GetUserDetailFromCtx(ctx)
+	if !found {
+		err = errors.Wrap(errors.New("forbidden"), "Usecase.CreatePayrollPeriod")
+		return
+	}
+
+	if user.Role != "admin" {
+		err = errors.Wrap(errors.New("forbidden"), "Usecase.CreatePayrollPeriod")
+		return
+	}
+
+	mstPayrollPeriod := &model.MstPayrollPeriod{
+		StartDate: payrollPeriodRequest.StartDate,
+		EndDate:   payrollPeriodRequest.EndDate,
+		CreatedBy: sql.NullInt64{
+			Int64: user.ID,
+			Valid: true,
+		},
+	}
+
+	err = u.AttendanceDB.CreatePayrollPeriod(ctx, mstPayrollPeriod)
+	if err != nil {
+		err = errors.Wrap(err, "Usecase.CreatePayrollPeriod")
+		return
+	}
+
+	resp = model.PayrollPeriodResponse{
+		ID:                 mstPayrollPeriod.ID,
+		StartDate:          mstPayrollPeriod.StartDate,
+		EndDate:            mstPayrollPeriod.EndDate,
+		IsPayrollProcessed: mstPayrollPeriod.IsPayrollProcessed,
+	}
+	return
 }

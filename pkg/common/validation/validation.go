@@ -66,6 +66,10 @@ func SetCustomEmailMessage() RegisterTranslationHandler {
 	return SetCustomValidationMessage("email", "The {0} field format is invalid.")
 }
 
+func SetCustomGreaterThanFieldMessage() RegisterTranslationHandler {
+	return SetCustomValidationMessage("gtfield", "The {0} field must be greater than {1} field.")
+}
+
 func NewTranslator(englishTranslator locales.Translator) ut.Translator {
 	translatorLib := ut.New(englishTranslator)
 	translator, _ := translatorLib.GetTranslator("en")

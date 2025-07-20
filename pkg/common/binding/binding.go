@@ -44,6 +44,7 @@ func init() {
 		validation.SetCustomRequiredMessage(),
 		validation.SetCustomEmailMessage(),
 		validation.SetCustomMaxNumberCharacterMessage(),
+		validation.SetCustomGreaterThanFieldMessage(),
 	)
 
 	validatorURL.RegisterTagNameFunc(validation.RegisterSchemaTag)
@@ -52,6 +53,7 @@ func init() {
 		validation.SetCustomRequiredMessage(),
 		validation.SetCustomEmailMessage(),
 		validation.SetCustomMaxNumberCharacterMessage(),
+		validation.SetCustomGreaterThanFieldMessage(),
 	)
 
 	schemaDecoder.IgnoreUnknownKeys(true)
