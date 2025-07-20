@@ -6,6 +6,7 @@ import (
 
 	"github.com/faisalhardin/employee-payroll-system/internal/entity/model"
 	attendaceDB "github.com/faisalhardin/employee-payroll-system/internal/repo/db/attendance"
+	"github.com/faisalhardin/employee-payroll-system/pkg/common/commonerr"
 	"github.com/faisalhardin/employee-payroll-system/pkg/middlewares/auth"
 	"github.com/pkg/errors"
 )
@@ -18,7 +19,7 @@ func New(u Usecase) *Usecase {
 	return &u
 }
 
-func (u *Usecase) TapIn(ctx context.Context) (resp model.TapInResponse, err error) {
+func (u *Usecase) TapIn(ctx context.Context, tapInRequest model.MstAttendance) (resp model.TapInResponse, err error) {
 
 	user, found := auth.GetUserDetailFromCtx(ctx)
 	if !found {
@@ -26,9 +27,17 @@ func (u *Usecase) TapIn(ctx context.Context) (resp model.TapInResponse, err erro
 		return
 	}
 
+	if tapInRequest.AttendanceDate.IsZero() {
+		tapInRequest.AttendanceDate = time.Now()
+	}
 	mstAttendace := &model.MstAttendance{
 		IDMstUser:      user.ID,
-		AttendanceDate: time.Now(),
+		AttendanceDate: tapInRequest.AttendanceDate,
+	}
+
+	if isWeekend(mstAttendace.AttendanceDate) {
+		err = commonerr.SetNewBadRequest("invalid", "cannot tap in on weekend")
+		return
 	}
 
 	existingAttendance, err := u.AttendanceDB.GetAttendance(ctx, *mstAttendace)
@@ -53,4 +62,9 @@ func (u *Usecase) TapIn(ctx context.Context) (resp model.TapInResponse, err erro
 		AttendanceDate: mstAttendace.AttendanceDate,
 	}
 	return
+}
+
+func isWeekend(t time.Time) bool {
+	weekday := t.Weekday()
+	return weekday == time.Saturday || weekday == time.Sunday
 }
