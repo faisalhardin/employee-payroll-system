@@ -28,6 +28,7 @@ func (s *Server) RegisterRoutes(m *Modules) http.Handler {
 		v1.Post("/tap-in", m.Handlers.AttendanceHandler.TapIn)
 		v1.Post("/payroll-period", m.Handlers.AttendanceHandler.CreatePayrollPeriod)
 		v1.Post("/overtime", m.Handlers.AttendanceHandler.SubmitOvertime)
+		v1.Post("/reimbursement", m.Handlers.AttendanceHandler.SubmitReimbursement)
 	})
 
 	return r

@@ -67,19 +67,6 @@ type SubmitOvertimeResponse struct {
 	Hours        int       `json:"hours"`
 }
 
-// Reimbursement represents reimbursement requests
-type TrxReimbursement struct {
-	ID                 int64         `json:"id" xorm:"id"`
-	UserID             int64         `json:"user_id" xorm:"user_id"`
-	IDMstPayrollPeriod int64         `json:"id_mst_payroll_period" xorm:"id_mst_payroll_period"`
-	Amount             float64       `json:"amount" xorm:"amount"`
-	Description        string        `json:"description" xorm:"description"`
-	CreatedAt          time.Time     `json:"created_at" xorm:"created_at"`
-	UpdatedAt          time.Time     `json:"updated_at" xorm:"updated_at"`
-	CreatedBy          sql.NullInt64 `json:"created_by,omitempty" xorm:"created_by"`
-	UpdatedBy          sql.NullInt64 `json:"updated_by,omitempty" xorm:"updated_by"`
-}
-
 // Payroll represents processed payroll records
 type Payroll struct {
 	ID                  int64         `json:"id" xorm:"id"`
