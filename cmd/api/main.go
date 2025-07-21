@@ -87,6 +87,7 @@ func main() {
 	})
 	attendanceUC := attendanceusecase.New(attendanceusecase.Usecase{
 		AttendanceDB: attendanceRepo,
+		UserDB:       userDB,
 	})
 
 	userHandler := userhandler.New(&userhandler.UserHandler{

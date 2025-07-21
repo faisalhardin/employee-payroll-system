@@ -2,6 +2,7 @@ package attendance
 
 import (
 	"context"
+	"database/sql"
 
 	"github.com/faisalhardin/employee-payroll-system/internal/entity/model"
 	"github.com/faisalhardin/employee-payroll-system/pkg/middlewares/auth"
@@ -9,8 +10,8 @@ import (
 )
 
 const (
-	ReimbursementStatusPending = "Pending"
-	ReimbursementStatusPaid    = "Paid"
+	ReimbursementStatusPending = "pending"
+	ReimbursementStatusPaid    = "paid"
 )
 
 func (u *Usecase) SubmitReimbursement(ctx context.Context, submitReimbursementRequest model.SubmitReimbursementRequest) (resp model.SubmitReimbursementResponse, err error) {
@@ -26,6 +27,10 @@ func (u *Usecase) SubmitReimbursement(ctx context.Context, submitReimbursementRe
 		Amount:      submitReimbursementRequest.Amount,
 		Description: submitReimbursementRequest.Description,
 		Status:      ReimbursementStatusPending,
+		CreatedBy: sql.NullInt64{
+			Int64: user.ID,
+			Valid: true,
+		},
 	}
 
 	err = u.AttendanceDB.SubmitReimbursement(ctx, trxReimbursement)
@@ -41,5 +46,5 @@ func (u *Usecase) SubmitReimbursement(ctx context.Context, submitReimbursementRe
 		Status:      trxReimbursement.Status,
 	}
 
-	return
+	return resp, nil
 }

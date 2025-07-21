@@ -11,7 +11,7 @@ type MstUser struct {
 	Username     string         `json:"username" xorm:"'username'"`
 	PasswordHash string         `json:"-" xorm:"'password_hash'"`
 	Role         string         `json:"role" xorm:"'role'"`
-	Salary       float64        `json:"salary,omitempty" xorm:"'salary'"`
+	Salary       int64          `json:"salary,omitempty" xorm:"'salary'"`
 	CreatedAt    time.Time      `json:"created_at" xorm:"'created_at' created"`
 	UpdatedAt    time.Time      `json:"updated_at" xorm:"'updated_at' updated"`
 	CreatedBy    sql.NullString `json:"created_by,omitempty" xorm:"created_by"`

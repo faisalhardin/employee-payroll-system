@@ -7,6 +7,7 @@ import (
 
 	"github.com/faisalhardin/employee-payroll-system/internal/entity/model"
 	attendaceDB "github.com/faisalhardin/employee-payroll-system/internal/repo/db/attendance"
+	"github.com/faisalhardin/employee-payroll-system/internal/repo/db/user"
 	"github.com/faisalhardin/employee-payroll-system/pkg/common/commonerr"
 	"github.com/faisalhardin/employee-payroll-system/pkg/middlewares/auth"
 	"github.com/pkg/errors"
@@ -18,6 +19,7 @@ const (
 
 type Usecase struct {
 	AttendanceDB *attendaceDB.Conn
+	UserDB       *user.Conn
 }
 
 func New(u Usecase) *Usecase {
@@ -103,10 +105,9 @@ func (u *Usecase) CreatePayrollPeriod(ctx context.Context, payrollPeriodRequest 
 	}
 
 	resp = model.PayrollPeriodResponse{
-		ID:                 mstPayrollPeriod.ID,
-		StartDate:          mstPayrollPeriod.StartDate,
-		EndDate:            mstPayrollPeriod.EndDate,
-		IsPayrollProcessed: mstPayrollPeriod.IsPayrollProcessed,
+		ID:        mstPayrollPeriod.ID,
+		StartDate: mstPayrollPeriod.StartDate,
+		EndDate:   mstPayrollPeriod.EndDate,
 	}
 	return
 }

@@ -101,5 +101,6 @@ require (
 	github.com/gorilla/schema v1.4.1
 	github.com/json-iterator/go v1.1.12
 	github.com/lib/pq v1.10.9
+	github.com/shopspring/decimal v1.4.0
 	xorm.io/core v0.7.2-0.20190928055935-90aeac8d08eb
 )

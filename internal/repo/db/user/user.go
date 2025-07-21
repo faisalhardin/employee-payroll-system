@@ -35,3 +35,13 @@ func (c *Conn) GetUser(ctx context.Context, params model.SignInRequest) (res mod
 
 	return
 }
+
+func (c *Conn) ListUser(ctx context.Context) (res []model.MstUser, err error) {
+	session := c.DB.MasterDB.Table(MstUserTable)
+	err = session.Find(&res)
+	if err != nil {
+		err = errors.Wrap(err, "conn.ListUser")
+		return
+	}
+	return
+}

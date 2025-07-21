@@ -70,3 +70,22 @@ func (h *AttendanceHandler) SubmitOvertime(w http.ResponseWriter, r *http.Reques
 
 	commonwriter.SetOKWithData(ctx, w, resp)
 }
+
+func (h *AttendanceHandler) GeneratePayroll(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	req := model.GeneratePayrollRequest{}
+	err := bindingBind(r, &req)
+	if err != nil {
+		commonwriter.SetError(ctx, w, err)
+		return
+	}
+
+	err = h.AttendanceUsecase.GeneratePayroll(ctx, req)
+	if err != nil {
+		commonwriter.SetError(ctx, w, err)
+		return
+	}
+
+	commonwriter.SetOKWithData(ctx, w, nil)
+}

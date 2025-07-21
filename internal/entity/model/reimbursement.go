@@ -30,3 +30,9 @@ type SubmitReimbursementResponse struct {
 	Status      string `json:"status"`
 	Description string `json:"description"`
 }
+
+type ListReimbursementParams struct {
+	StartDate time.Time `json:"start_date"`
+	EndDate   time.Time `json:"end_date"`
+	Status    string    `json:"status"`
+}
