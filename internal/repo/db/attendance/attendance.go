@@ -55,7 +55,7 @@ func (c *Conn) ListAttendanceByParams(ctx context.Context, params model.ListAtte
 	}
 
 	if params.IsForGeneratingPayroll {
-		session.Where("payroll_period_id is null")
+		session.Where("id_mst_payroll_period is null")
 	}
 
 	err = session.

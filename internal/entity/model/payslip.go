@@ -8,7 +8,7 @@ import (
 // TrxUserPayslip represents payslip data for employees
 type TrxUserPayslip struct {
 	ID                  int64         `xorm:"'id' pk autoincr"`
-	UserID              int64         `xorm:"id_mst_usr"`
+	UserID              int64         `xorm:"id_mst_user"`
 	Username            string        `xorm:"username"`
 	IDMstPayrollPeriod  int64         `xorm:"id_mst_payroll_period"`
 	BaseSalary          int64         `xorm:"base_salary"`

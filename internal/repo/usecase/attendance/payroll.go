@@ -29,6 +29,10 @@ func (u *Usecase) GeneratePayroll(ctx context.Context, request model.GeneratePay
 		return errors.Wrap(err, "Usecase.GeneratePayroll")
 	}
 
+	if payrollPeriod.ID == 0 {
+		return commonerr.SetNewBadRequest("invalid", "payroll period not found")
+	}
+
 	if !payrollPeriod.PayrollProcessedDate.Time.IsZero() {
 		return commonerr.SetNewBadRequest("invalid", "payroll has been processed")
 	}
@@ -319,7 +323,7 @@ func (u *Usecase) reimbursementCalculation(ctx context.Context,
 			Int64: userID,
 			Valid: true,
 		}
-
+		reimbursement.Status = ReimbursementStatusPaid
 		listOfReimbursement[i] = reimbursement
 	}
 
