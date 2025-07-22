@@ -9,6 +9,7 @@ import (
 	"github.com/faisalhardin/employee-payroll-system/internal/entity/constant"
 	"github.com/faisalhardin/employee-payroll-system/internal/entity/model"
 	mockattendancedb "github.com/faisalhardin/employee-payroll-system/internal/entity/repo/db/_mocks/attendance"
+	mockuserdb "github.com/faisalhardin/employee-payroll-system/internal/entity/repo/db/_mocks/user"
 	"github.com/faisalhardin/employee-payroll-system/pkg/middlewares/auth"
 	"github.com/golang/mock/gomock"
 	"github.com/pkg/errors"
@@ -17,6 +18,7 @@ import (
 
 var (
 	mockAttendanceRepo *mockattendancedb.MockAttendanceRepository
+	mockUserRepo       *mockuserdb.MockUserRepository
 
 	errFoo = errors.New("errFoo")
 )
@@ -24,6 +26,7 @@ var (
 func initMock(t *testing.T) *gomock.Controller {
 	ctrl := gomock.NewController(t)
 	mockAttendanceRepo = mockattendancedb.NewMockAttendanceRepository(ctrl)
+	mockUserRepo = mockuserdb.NewMockUserRepository(ctrl)
 
 	return ctrl
 }

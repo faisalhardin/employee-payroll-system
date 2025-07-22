@@ -14,6 +14,207 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+func Test_GeneratePayroll(t *testing.T) {
+	ctrl := initMock(t)
+	defer ctrl.Finish()
+
+	type args struct {
+		ctx     context.Context
+		request model.GeneratePayrollRequest
+	}
+	testCases := []struct {
+		name    string
+		args    args
+		patch   func()
+		unpatch func()
+		wantErr bool
+	}{
+		{
+			name: "success - complete payroll generation",
+			args: args{
+				ctx: context.Background(),
+				request: model.GeneratePayrollRequest{
+					IDMstPayrollPeriod: 1,
+				},
+			},
+			patch: func() {
+				authGetUserDetailFromCtx = func(ctx context.Context) (auth.UserJWTPayload, bool) {
+					return auth.UserJWTPayload{
+						ID: 999,
+					}, true
+				}
+
+				mockAttendanceRepo.
+					EXPECT().GetPayrollPeriod(gomock.Any(), int64(1)).
+					Return(model.MstPayrollPeriod{
+						ID:        1,
+						StartDate: time.Date(2024, 1, 1, 0, 0, 0, 0, time.UTC),
+						EndDate:   time.Date(2024, 1, 31, 0, 0, 0, 0, time.UTC),
+						PayrollProcessedDate: sql.NullTime{
+							Time:  time.Time{},
+							Valid: false,
+						},
+					}, nil).
+					Times(1)
+
+				mockUserRepo.
+					EXPECT().ListUser(gomock.Any()).
+					Return([]model.MstUser{
+						{
+							ID:       123,
+							Username: "john.doe",
+							Salary:   1000000,
+						},
+						{
+							ID:       456,
+							Username: "jane.smith",
+							Salary:   1500000,
+						},
+					}, nil).
+					Times(1)
+
+				usecaseGetNumberOfWorkingDays = func(u *Usecase, startDate, endDate time.Time) int {
+					return 22
+				}
+
+				usecaseGetMapOfPayslipSummary = func(u *Usecase, employees []model.MstUser, workingDays int, payrollPeriodID int64) map[int64]model.TrxUserPayslip {
+					return map[int64]model.TrxUserPayslip{
+						123: {
+							UserID:             123,
+							Username:           "john.doe",
+							BaseSalary:         1000000,
+							WorkingDays:        22,
+							IDMstPayrollPeriod: 1,
+						},
+						456: {
+							UserID:             456,
+							Username:           "jane.smith",
+							BaseSalary:         1500000,
+							WorkingDays:        22,
+							IDMstPayrollPeriod: 1,
+						},
+					}
+				}
+
+				usecaseAttendanceCalculation = func(u *Usecase, ctx context.Context, startDate, endDate time.Time, payslipSummary map[int64]model.TrxUserPayslip, payrollPeriodID int64, userID int64) (map[int64]model.TrxUserPayslip, []model.MstAttendance, error) {
+					payslipSummary[123] = model.TrxUserPayslip{
+						UserID:             123,
+						Username:           "john.doe",
+						BaseSalary:         1000000,
+						WorkingDays:        22,
+						AttendedDays:       20,
+						IDMstPayrollPeriod: 1,
+					}
+					payslipSummary[456] = model.TrxUserPayslip{
+						UserID:             456,
+						Username:           "jane.smith",
+						BaseSalary:         1500000,
+						WorkingDays:        22,
+						AttendedDays:       22,
+						IDMstPayrollPeriod: 1,
+					}
+					return payslipSummary, []model.MstAttendance{{ID: 1}, {ID: 2}}, nil
+				}
+
+				usecaseOvertimeCalculation = func(u *Usecase, ctx context.Context, startDate, endDate time.Time, payslipSummary map[int64]model.TrxUserPayslip, payrollPeriodID int64, userID int64) (map[int64]model.TrxUserPayslip, []model.TrxOvertime, error) {
+					summary := payslipSummary[123]
+					summary.OvertimeHours = 4
+					payslipSummary[123] = summary
+					return payslipSummary, []model.TrxOvertime{{ID: 1}}, nil
+				}
+
+				usecaseReimbursementCalculation = func(u *Usecase, ctx context.Context, startDate, endDate time.Time, payslipSummary map[int64]model.TrxUserPayslip, payrollPeriodID int64, userID int64) (map[int64]model.TrxUserPayslip, []model.TrxReimbursement, error) {
+					summary := payslipSummary[123]
+					summary.TotalReimbursements = 50000
+					payslipSummary[123] = summary
+					return payslipSummary, []model.TrxReimbursement{{ID: 1}}, nil
+				}
+
+				usecaseCalculatePayslipSummaryTotalSalary = func(u *Usecase, payslipSummary map[int64]model.TrxUserPayslip, numberOfWorkingDays int) (map[int64]model.TrxUserPayslip, int64) {
+					payslipSummary[123] = model.TrxUserPayslip{
+						UserID:              123,
+						Username:            "john.doe",
+						BaseSalary:          1000000,
+						WorkingDays:         22,
+						AttendedDays:        20,
+						OvertimeHours:       4,
+						TotalReimbursements: 50000,
+						ProratedSalary:      909090,
+						OvertimePay:         50000,
+						TotalTakeHome:       1009090,
+						IDMstPayrollPeriod:  1,
+					}
+					payslipSummary[456] = model.TrxUserPayslip{
+						UserID:             456,
+						Username:           "jane.smith",
+						BaseSalary:         1500000,
+						WorkingDays:        22,
+						AttendedDays:       22,
+						TotalTakeHome:      1500000,
+						IDMstPayrollPeriod: 1,
+					}
+					return payslipSummary, 2509090
+				}
+
+				mockAttendanceRepo.
+					EXPECT().SubmitPayroll(gomock.Any(), gomock.Any()).
+					Return(nil).
+					Times(1)
+
+				usecaseSubmitPayslips = func(u *Usecase, ctx context.Context, mapOfPayslips map[int64]model.TrxUserPayslip) error {
+					return nil
+				}
+
+				usecaseUpdateAttendanceInBulk = func(u *Usecase, ctx context.Context, attendances []model.MstAttendance) error {
+					return nil
+				}
+
+				usecaseUpdateReimbursementInBulk = func(u *Usecase, ctx context.Context, reimbursements []model.TrxReimbursement) error {
+					return nil
+				}
+
+				usecaseUpdateOvertimeInBulk = func(u *Usecase, ctx context.Context, overtimes []model.TrxOvertime) error {
+					return nil
+				}
+
+				usecaseUpdatePayrollPeriod = func(u *Usecase, ctx context.Context, payrollPeriod *model.MstPayrollPeriod, userID int64) error {
+					return nil
+				}
+			},
+			unpatch: func() {
+				authGetUserDetailFromCtx = auth.GetUserDetailFromCtx
+				usecaseGetNumberOfWorkingDays = (*Usecase).getNumberOfWorkingDays
+				usecaseGetMapOfPayslipSummary = (*Usecase).getMapOfPayslipSummary
+				usecaseAttendanceCalculation = (*Usecase).attendanceCalculation
+				usecaseOvertimeCalculation = (*Usecase).overtimeCalculation
+				usecaseReimbursementCalculation = (*Usecase).reimbursementCalculation
+				usecaseCalculatePayslipSummaryTotalSalary = (*Usecase).calculatePayslipSummaryTotalSalary
+				usecaseSubmitPayslips = (*Usecase).submitPayslips
+				usecaseUpdateAttendanceInBulk = (*Usecase).updateAttendanceInBulk
+				usecaseUpdateReimbursementInBulk = (*Usecase).updateReimbursementInBulk
+				usecaseUpdateOvertimeInBulk = (*Usecase).updateOvertimeInBulk
+				usecaseUpdatePayrollPeriod = (*Usecase).updatePayrollPeriod
+			},
+			wantErr: false,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			u := Usecase{
+				AttendanceDB: mockAttendanceRepo,
+				UserDB:       mockUserRepo,
+			}
+			tc.patch()
+			defer tc.unpatch()
+
+			err := u.GeneratePayroll(tc.args.ctx, tc.args.request)
+
+			assert.Equal(t, tc.wantErr, err != nil)
+		})
+	}
+}
+
 func Test_calculatePayslipSummaryTotalSalary(t *testing.T) {
 	type args struct {
 		payslipSummary      map[int64]model.TrxUserPayslip

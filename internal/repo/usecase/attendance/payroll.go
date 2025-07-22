@@ -51,17 +51,18 @@ func (u *Usecase) GeneratePayroll(ctx context.Context, request model.GeneratePay
 		return commonerr.SetNewBadRequest("invalid", "payroll has been processed")
 	}
 
-	numberOfWorkingDays := u.getNumberOfWorkingDays(payrollPeriod.StartDate, payrollPeriod.EndDate)
+	numberOfWorkingDays := usecaseGetNumberOfWorkingDays(u, payrollPeriod.StartDate, payrollPeriod.EndDate)
 
 	employees, err := u.UserDB.ListUser(ctx)
 	if err != nil {
 		return errors.Wrap(err, "Usecase.GeneratePayroll")
 	}
 
-	payslipSummary := u.getMapOfPayslipSummary(employees, numberOfWorkingDays, payrollPeriod.ID)
+	payslipSummary := usecaseGetMapOfPayslipSummary(u, employees, numberOfWorkingDays, payrollPeriod.ID)
 
 	// START attendance calculation
-	payslipSummary, listOfAttendance, err := u.attendanceCalculation(
+	payslipSummary, listOfAttendance, err := usecaseAttendanceCalculation(
+		u,
 		ctx,
 		payrollPeriod.StartDate, payrollPeriod.EndDate,
 		payslipSummary,
@@ -74,7 +75,8 @@ func (u *Usecase) GeneratePayroll(ctx context.Context, request model.GeneratePay
 	// END attendance calculation
 
 	// START overtime calculation
-	payslipSummary, listOfOvertime, err := u.overtimeCalculation(
+	payslipSummary, listOfOvertime, err := usecaseOvertimeCalculation(
+		u,
 		ctx,
 		payrollPeriod.StartDate, payrollPeriod.EndDate,
 		payslipSummary,
@@ -87,7 +89,8 @@ func (u *Usecase) GeneratePayroll(ctx context.Context, request model.GeneratePay
 	// END overtime calculation
 
 	//  START reimbursement calculation
-	payslipSummary, listOfReimbursement, err := u.reimbursementCalculation(
+	payslipSummary, listOfReimbursement, err := usecaseReimbursementCalculation(
+		u,
 		ctx,
 		payrollPeriod.StartDate, payrollPeriod.EndDate,
 		payslipSummary,
@@ -99,7 +102,7 @@ func (u *Usecase) GeneratePayroll(ctx context.Context, request model.GeneratePay
 	}
 	// END reimbursement calculation
 
-	payslipSummary, totalTakeHomePay := u.calculatePayslipSummaryTotalSalary(payslipSummary, numberOfWorkingDays)
+	payslipSummary, totalTakeHomePay := usecaseCalculatePayslipSummaryTotalSalary(u, payslipSummary, numberOfWorkingDays)
 	payrollSummary := model.DtlPayroll{
 		IDMstPayrollPeriod: payrollPeriod.ID,
 		CreatedBy:          user.ID,
@@ -113,31 +116,31 @@ func (u *Usecase) GeneratePayroll(ctx context.Context, request model.GeneratePay
 	}
 
 	// store payslip summary
-	err = u.submitPayslips(ctx, payslipSummary)
+	err = usecaseSubmitPayslips(u, ctx, payslipSummary)
 	if err != nil {
 		return errors.Wrap(err, "Usecase.GeneratePayroll")
 	}
 
 	// update attendance
-	err = u.updateAttendanceInBulk(ctx, listOfAttendance)
+	err = usecaseUpdateAttendanceInBulk(u, ctx, listOfAttendance)
 	if err != nil {
 		return errors.Wrap(err, "Usecase.GeneratePayroll")
 	}
 
 	// update reimbursement
-	err = u.updateReimbursementInBulk(ctx, listOfReimbursement)
+	err = usecaseUpdateReimbursementInBulk(u, ctx, listOfReimbursement)
 	if err != nil {
 		return errors.Wrap(err, "Usecase.GeneratePayroll")
 	}
 
 	// update overtime
-	err = u.updateOvertimeInBulk(ctx, listOfOvertime)
+	err = usecaseUpdateOvertimeInBulk(u, ctx, listOfOvertime)
 	if err != nil {
 		return errors.Wrap(err, "Usecase.GeneratePayroll")
 	}
 
 	// update payroll period
-	err = u.updatePayrollPeriod(ctx, &payrollPeriod, user.ID)
+	err = usecaseUpdatePayrollPeriod(u, ctx, &payrollPeriod, user.ID)
 	if err != nil {
 		return errors.Wrap(err, "Usecase.GeneratePayroll")
 	}
