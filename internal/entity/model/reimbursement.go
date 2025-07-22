@@ -25,14 +25,16 @@ type SubmitReimbursementRequest struct {
 }
 
 type SubmitReimbursementResponse struct {
-	ID          int64  `json:"id"`
+	ID          int64  `json:"id,omitempty"`
 	Amount      int64  `json:"amount"`
 	Status      string `json:"status"`
 	Description string `json:"description"`
 }
 
 type ListReimbursementParams struct {
-	StartDate time.Time `json:"start_date"`
-	EndDate   time.Time `json:"end_date"`
-	Status    string    `json:"status"`
+	UserID             int64     `json:"user_id"`
+	IDMstPayrollPeriod int64     `json:"payroll_period_id"`
+	StartDate          time.Time `json:"start_date"`
+	EndDate            time.Time `json:"end_date"`
+	Status             string    `json:"status"`
 }

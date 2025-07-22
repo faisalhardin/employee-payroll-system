@@ -21,6 +21,22 @@ func (c *Conn) SubmitPayslips(ctx context.Context, payslips []model.TrxUserPaysl
 	return
 }
 
+func (c *Conn) GetPayslips(ctx context.Context, params model.GetPayslipRequest) (payslips []model.TrxUserPayslip, err error) {
+	session := c.DB.MasterDB.Table(TrxUserPayslipTable)
+
+	if params.IDMstPayrollPeriod > 0 {
+		session.Where("id_mst_payroll_period = ?", params.IDMstPayrollPeriod)
+	}
+	if params.UserID > 0 {
+		session.Where("id_mst_user = ?", params.UserID)
+	}
+	err = session.Find(&payslips)
+	if err != nil {
+		return nil, errors.Wrap(err, "GetPayslips")
+	}
+	return
+}
+
 func (c *Conn) SubmitPayroll(ctx context.Context, payroll model.DtlPayroll) (err error) {
 	session := c.DB.MasterDB.Table(DtlPayrollTable)
 	_, err = session.Insert(payroll)

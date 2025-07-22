@@ -39,3 +39,23 @@ type DtlPayroll struct {
 	CreatedBy          int64         `xorm:"created_by"`
 	UpdatedBy          sql.NullInt64 `xorm:"updated_by"`
 }
+
+type GetPayslipResponse struct {
+	StartDate           time.Time                     `json:"start_date"`
+	EndDate             time.Time                     `json:"end_date"`
+	TotalTakeHomePay    int64                         `json:"total_take_home_pay"`
+	AttendanceDate      []string                      `json:"attendance_date"`
+	WorkingDays         int                           `json:"working_days"`
+	AttendedDays        int                           `json:"attended_days"`
+	ProratedSalary      int64                         `json:"prorated_salary"`
+	OvertimeHours       int                           `json:"overtime_hours"`
+	OvertimePay         int64                         `json:"overtime_pay"`
+	OvertimeDetails     []GetOvertimeResponse         `json:"overtime_details"`
+	ReimbursementList   []SubmitReimbursementResponse `json:"reimbursement_list"`
+	TotalReimbursements int64                         `json:"total_reimbursements"`
+}
+
+type GetPayslipRequest struct {
+	IDMstPayrollPeriod int64 `schema:"payroll_period_id"`
+	UserID             int64 `json:"-"`
+}

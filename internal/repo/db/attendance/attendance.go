@@ -54,6 +54,10 @@ func (c *Conn) ListAttendanceByParams(ctx context.Context, params model.ListAtte
 		session.Where("attendance_date BETWEEN ? AND  ?", params.StartDate.Format("2006-01-02"), params.EndDate.Format("2006-01-02"))
 	}
 
+	if params.IDMstPayrollPeriod != 0 {
+		session.Where("id_mst_payroll_period = ?", params.IDMstPayrollPeriod)
+	}
+
 	if params.IsForGeneratingPayroll {
 		session.Where("id_mst_payroll_period is null")
 	}
@@ -139,6 +143,13 @@ func (c *Conn) ListOvertimeByParams(ctx context.Context, params model.ListOverti
 
 	if params.IsForGeneratingPayroll {
 		session.Where("id_mst_payroll_period is null")
+	}
+
+	if params.IDMstPayrollPeriod > 0 {
+		session.Where("id_mst_payroll_period = ?", params.IDMstPayrollPeriod)
+	}
+	if len(params.UserIDs) > 0 {
+		session.Where("id_mst_user = any(?)", pq.Array(params.UserIDs))
 	}
 
 	err = session.Find(&res)

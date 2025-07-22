@@ -19,6 +19,7 @@ type MstAttendance struct {
 
 type ListAttendanceParams struct {
 	IDsMstUser             []int64   `xorm:"id_mst_user"`
+	IDMstPayrollPeriod     int64     `xorm:"id_mst_payroll_period"`
 	StartDate              time.Time `xorm:"start_date"`
 	EndDate                time.Time `xorm:"end_date"`
 	IsForGeneratingPayroll bool      `xorm:"is_for_generating_payroll"`
@@ -64,6 +65,11 @@ type TrxOvertime struct {
 	UpdatedBy          sql.NullInt64 `xorm:"updated_by"`
 }
 
+type GetOvertimeResponse struct {
+	OvertimeDate time.Time `json:"overtime_date"`
+	Hours        int       `json:"hours"`
+}
+
 type SubmitOvertimeRequest struct {
 	OvertimeDate time.Time `json:"overtime_date" validate:"required"`
 	Hours        int       `json:"hours" validate:"required,gt=0"`
@@ -73,6 +79,7 @@ type ListOvertimeParams struct {
 	StartDate              time.Time
 	EndDate                time.Time
 	UserIDs                []int64
+	IDMstPayrollPeriod     int64
 	IsForGeneratingPayroll bool
 }
 

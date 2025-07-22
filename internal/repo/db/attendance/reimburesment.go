@@ -23,12 +23,17 @@ func (c *Conn) SubmitReimbursement(ctx context.Context, reimbursement *model.Trx
 func (c *Conn) ListReimbursementByParams(ctx context.Context, params model.ListReimbursementParams) (resp []model.TrxReimbursement, err error) {
 	session := c.DB.MasterDB.Table(TrxReimbursementTable)
 
+	if params.UserID > 0 {
+		session.Where("id_mst_user = ?", params.UserID)
+	}
 	if !params.StartDate.IsZero() && !params.EndDate.IsZero() {
 		session.Where("created_at BETWEEN ? and ?", params.StartDate.Format("2006-01-02"), params.EndDate.Format("2006-01-02"))
 	}
-
 	if params.Status != "" {
 		session.Where("status = ?", params.Status)
+	}
+	if params.IDMstPayrollPeriod != 0 {
+		session.Where("id_mst_payroll_period = ?", params.IDMstPayrollPeriod)
 	}
 
 	err = session.Find(&resp)

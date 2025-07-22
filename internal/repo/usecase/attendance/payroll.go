@@ -367,3 +367,88 @@ func (*Usecase) calculatePayslipSummaryTotalSalary(
 
 	return payslipSummary, totalTakeHomePay
 }
+
+func (u *Usecase) GetEmployeePayslip(ctx context.Context, request model.GetPayslipRequest) (payslip model.GetPayslipResponse, err error) {
+	user, found := auth.GetUserDetailFromCtx(ctx)
+	if !found {
+		err = errors.Wrap(errors.New("user not found"), "Usecase.GetEmployeePayslip")
+		return
+	}
+	request.UserID = user.ID
+
+	payrollPeriod, err := u.AttendanceDB.GetPayrollPeriod(ctx, int64(request.IDMstPayrollPeriod))
+	if err != nil {
+		return
+	}
+
+	payslips, err := u.AttendanceDB.GetPayslips(ctx, request)
+	if err != nil {
+		return
+	}
+	if len(payslips) == 0 {
+		err = errors.Wrap(commonerr.SetNewBadRequest("not found", "payslip not found"), "Usecase.GetEmployeePayslip")
+		return
+	}
+	employeePayslip := payslips[0]
+
+	listOfAttendance, err := u.AttendanceDB.ListAttendanceByParams(ctx, model.ListAttendanceParams{
+		IDsMstUser:         []int64{user.ID},
+		IDMstPayrollPeriod: int64(request.IDMstPayrollPeriod),
+	})
+	if err != nil {
+		return
+	}
+
+	attendanceDate := []string{}
+	for _, attendance := range listOfAttendance {
+		attendanceDate = append(attendanceDate, attendance.AttendanceDate.Format("2006-01-02"))
+	}
+
+	listOfOvertime, err := u.AttendanceDB.ListOvertimeByParams(ctx, model.ListOvertimeParams{
+		UserIDs:            []int64{user.ID},
+		IDMstPayrollPeriod: int64(request.IDMstPayrollPeriod),
+	})
+	if err != nil {
+		return
+	}
+	listOfOvertimeResponse := []model.GetOvertimeResponse{}
+	for _, overtime := range listOfOvertime {
+		listOfOvertimeResponse = append(listOfOvertimeResponse, model.GetOvertimeResponse{
+			OvertimeDate: overtime.OvertimeDate,
+			Hours:        overtime.Hours,
+		})
+	}
+
+	listOfReimbursement, err := u.AttendanceDB.ListReimbursementByParams(ctx, model.ListReimbursementParams{
+		UserID:             user.ID,
+		IDMstPayrollPeriod: int64(request.IDMstPayrollPeriod),
+	})
+	if err != nil {
+		return
+	}
+	reimbursementListResponse := []model.SubmitReimbursementResponse{}
+	for _, reimbursement := range listOfReimbursement {
+		reimbursementListResponse = append(reimbursementListResponse, model.SubmitReimbursementResponse{
+			Description: reimbursement.Description,
+			Amount:      reimbursement.Amount,
+			Status:      reimbursement.Status,
+		})
+	}
+
+	payslip = model.GetPayslipResponse{
+		StartDate:           payrollPeriod.StartDate,
+		EndDate:             payrollPeriod.EndDate,
+		TotalTakeHomePay:    employeePayslip.TotalTakeHome,
+		AttendanceDate:      attendanceDate,
+		WorkingDays:         employeePayslip.WorkingDays,
+		AttendedDays:        employeePayslip.AttendedDays,
+		ProratedSalary:      employeePayslip.ProratedSalary,
+		OvertimeHours:       employeePayslip.OvertimeHours,
+		OvertimePay:         employeePayslip.OvertimePay,
+		TotalReimbursements: employeePayslip.TotalReimbursements,
+		OvertimeDetails:     listOfOvertimeResponse,
+		ReimbursementList:   reimbursementListResponse,
+	}
+
+	return
+}
