@@ -7,3 +7,9 @@ server:
 
 jwt_config:
   duration_in_hours: 720 #set as 1 month expiration time
+  jwt_credentials:
+    secret: "anewKeyForMe"
+
+db_config:
+  db_master:
+    dsn: "postgresql://user:password@localhost:5432/postgres?sslmode=disable&search_path=public"
