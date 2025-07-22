@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"time"
 
+	"github.com/faisalhardin/employee-payroll-system/internal/entity/constant"
 	"github.com/faisalhardin/employee-payroll-system/internal/entity/model"
 	attendaceDB "github.com/faisalhardin/employee-payroll-system/internal/repo/db/attendance"
 	"github.com/faisalhardin/employee-payroll-system/internal/repo/db/user"
@@ -84,7 +85,7 @@ func (u *Usecase) CreatePayrollPeriod(ctx context.Context, payrollPeriodRequest 
 		return
 	}
 
-	if user.Role != "admin" {
+	if user.Role != constant.UserRoleAdmin {
 		err = errors.Wrap(errors.New("forbidden"), "Usecase.CreatePayrollPeriod")
 		return
 	}

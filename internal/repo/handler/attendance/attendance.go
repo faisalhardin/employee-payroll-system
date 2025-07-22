@@ -108,3 +108,22 @@ func (h *AttendanceHandler) GetEmployeePayslip(w http.ResponseWriter, r *http.Re
 
 	commonwriter.SetOKWithData(ctx, w, resp)
 }
+
+func (h *AttendanceHandler) GetPayroll(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	req := model.GetPayrollRequest{}
+	err := bindingBind(r, &req)
+	if err != nil {
+		commonwriter.SetError(ctx, w, err)
+		return
+	}
+
+	resp, err := h.AttendanceUsecase.GetPayroll(ctx, req)
+	if err != nil {
+		commonwriter.SetError(ctx, w, err)
+		return
+	}
+
+	commonwriter.SetOKWithData(ctx, w, resp)
+}

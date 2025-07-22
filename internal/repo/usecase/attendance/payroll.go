@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"time"
 
+	"github.com/faisalhardin/employee-payroll-system/internal/entity/constant"
 	"github.com/faisalhardin/employee-payroll-system/internal/entity/model"
 	"github.com/faisalhardin/employee-payroll-system/pkg/common/commonerr"
 	"github.com/faisalhardin/employee-payroll-system/pkg/middlewares/auth"
@@ -448,6 +449,54 @@ func (u *Usecase) GetEmployeePayslip(ctx context.Context, request model.GetPaysl
 		TotalReimbursements: employeePayslip.TotalReimbursements,
 		OvertimeDetails:     listOfOvertimeResponse,
 		ReimbursementList:   reimbursementListResponse,
+	}
+
+	return
+}
+
+func (u *Usecase) GetPayroll(ctx context.Context, request model.GetPayrollRequest) (payrollSummary model.GetPayrollResponse, err error) {
+	user, found := auth.GetUserDetailFromCtx(ctx)
+	if !found {
+		err = errors.Wrap(errors.New("user not found"), "Usecase.GetEmployeePayslip")
+		return
+	}
+	if user.Role != constant.UserRoleAdmin {
+		err = errors.Wrap(errors.New("unauthorized"), "Usecase.GetEmployeePayslip")
+		return
+	}
+
+	payrollPeriod, err := u.AttendanceDB.GetPayrollPeriod(ctx, request.IDMstPayrollPeriod)
+	if err != nil {
+		return
+	}
+	if payrollPeriod.CreatedAt.IsZero() {
+		err = errors.Wrap(commonerr.SetNewBadRequest("not found", "payroll period not found"), "Usecase.GetEmployeePayslip")
+		return
+	}
+
+	payslips, err := u.AttendanceDB.GetPayslips(ctx, model.GetPayslipRequest{
+		IDMstPayrollPeriod: request.IDMstPayrollPeriod,
+	})
+	if err != nil {
+		return
+	}
+	if len(payslips) == 0 {
+		err = errors.Wrap(commonerr.SetNewBadRequest("not found", "payslip not found"), "Usecase.GetEmployeePayslip")
+		return
+	}
+
+	payrollDetail, err := u.AttendanceDB.GetPayrollDetail(ctx, model.GetDtlPayrollRequest{
+		IDMstPayrollPeriod: request.IDMstPayrollPeriod,
+	})
+	if err != nil {
+		return
+	}
+
+	payrollSummary = model.GetPayrollResponse{
+		StartDate:        payrollPeriod.StartDate,
+		EndDate:          payrollPeriod.EndDate,
+		EmployeesPayslip: payslips,
+		TotalTakeHomePay: payrollDetail.TotalTakeHome,
 	}
 
 	return

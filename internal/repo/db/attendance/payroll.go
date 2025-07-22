@@ -45,3 +45,15 @@ func (c *Conn) SubmitPayroll(ctx context.Context, payroll model.DtlPayroll) (err
 	}
 	return
 }
+
+func (c *Conn) GetPayrollDetail(ctx context.Context, params model.GetDtlPayrollRequest) (payrollDetail model.DtlPayroll, err error) {
+	session := c.DB.MasterDB.Table(DtlPayrollTable)
+
+	_, err = session.
+		Where("id_mst_payroll_period = ?", params.IDMstPayrollPeriod).
+		Get(&payrollDetail)
+	if err != nil {
+		return payrollDetail, errors.Wrap(err, "GetPayrollDetail")
+	}
+	return
+}
