@@ -239,6 +239,20 @@ func (mr *MockAttendanceRepositoryMockRecorder) SubmitReimbursement(arg0, arg1 i
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SubmitReimbursement", reflect.TypeOf((*MockAttendanceRepository)(nil).SubmitReimbursement), arg0, arg1)
 }
 
+// UpdateAttendance mocks base method.
+func (m *MockAttendanceRepository) UpdateAttendance(arg0 context.Context, arg1 *model.MstAttendance) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdateAttendance", arg0, arg1)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// UpdateAttendance indicates an expected call of UpdateAttendance.
+func (mr *MockAttendanceRepositoryMockRecorder) UpdateAttendance(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateAttendance", reflect.TypeOf((*MockAttendanceRepository)(nil).UpdateAttendance), arg0, arg1)
+}
+
 // UpdateOvertime mocks base method.
 func (m *MockAttendanceRepository) UpdateOvertime(arg0 context.Context, arg1 *model.TrxOvertime) error {
 	m.ctrl.T.Helper()
@@ -279,18 +293,4 @@ func (m *MockAttendanceRepository) UpdateReimbursement(arg0 context.Context, arg
 func (mr *MockAttendanceRepositoryMockRecorder) UpdateReimbursement(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateReimbursement", reflect.TypeOf((*MockAttendanceRepository)(nil).UpdateReimbursement), arg0, arg1)
-}
-
-// ateAttendance mocks base method.
-func (m *MockAttendanceRepository) ateAttendance(arg0 context.Context, arg1 *model.MstAttendance) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ateAttendance", arg0, arg1)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// ateAttendance indicates an expected call of ateAttendance.
-func (mr *MockAttendanceRepositoryMockRecorder) ateAttendance(arg0, arg1 interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ateAttendance", reflect.TypeOf((*MockAttendanceRepository)(nil).ateAttendance), arg0, arg1)
 }

@@ -8,7 +8,6 @@ import (
 	"github.com/faisalhardin/employee-payroll-system/internal/entity/constant"
 	"github.com/faisalhardin/employee-payroll-system/internal/entity/model"
 	"github.com/faisalhardin/employee-payroll-system/pkg/common/commonerr"
-	"github.com/faisalhardin/employee-payroll-system/pkg/middlewares/auth"
 	"github.com/pkg/errors"
 	"github.com/shopspring/decimal"
 )
@@ -18,8 +17,22 @@ const (
 	WorkingHours       = int64(8)
 )
 
+var (
+	usecaseGetNumberOfWorkingDays             = (*Usecase).getNumberOfWorkingDays
+	usecaseCalculatePayslipSummaryTotalSalary = (*Usecase).calculatePayslipSummaryTotalSalary
+	usecaseReimbursementCalculation           = (*Usecase).reimbursementCalculation
+	usecaseOvertimeCalculation                = (*Usecase).overtimeCalculation
+	usecaseAttendanceCalculation              = (*Usecase).attendanceCalculation
+	usecaseSubmitPayslips                     = (*Usecase).submitPayslips
+	usecaseUpdateReimbursementInBulk          = (*Usecase).updateReimbursementInBulk
+	usecaseUpdateOvertimeInBulk               = (*Usecase).updateOvertimeInBulk
+	usecaseUpdateAttendanceInBulk             = (*Usecase).updateAttendanceInBulk
+	usecaseUpdatePayrollPeriod                = (*Usecase).updatePayrollPeriod
+	usecaseGetMapOfPayslipSummary             = (*Usecase).getMapOfPayslipSummary
+)
+
 func (u *Usecase) GeneratePayroll(ctx context.Context, request model.GeneratePayrollRequest) (err error) {
-	user, found := auth.GetUserDetailFromCtx(ctx)
+	user, found := authGetUserDetailFromCtx(ctx)
 	if !found {
 		err = errors.Wrap(errors.New("user not found"), "Usecase.GeneratePayroll")
 		return
@@ -370,7 +383,7 @@ func (*Usecase) calculatePayslipSummaryTotalSalary(
 }
 
 func (u *Usecase) GetEmployeePayslip(ctx context.Context, request model.GetPayslipRequest) (payslip model.GetPayslipResponse, err error) {
-	user, found := auth.GetUserDetailFromCtx(ctx)
+	user, found := authGetUserDetailFromCtx(ctx)
 	if !found {
 		err = errors.Wrap(errors.New("user not found"), "Usecase.GetEmployeePayslip")
 		return
@@ -455,7 +468,7 @@ func (u *Usecase) GetEmployeePayslip(ctx context.Context, request model.GetPaysl
 }
 
 func (u *Usecase) GetPayroll(ctx context.Context, request model.GetPayrollRequest) (payrollSummary model.GetPayrollResponse, err error) {
-	user, found := auth.GetUserDetailFromCtx(ctx)
+	user, found := authGetUserDetailFromCtx(ctx)
 	if !found {
 		err = errors.Wrap(errors.New("user not found"), "Usecase.GetEmployeePayslip")
 		return

@@ -5,7 +5,6 @@ import (
 	"database/sql"
 
 	"github.com/faisalhardin/employee-payroll-system/internal/entity/model"
-	"github.com/faisalhardin/employee-payroll-system/pkg/middlewares/auth"
 	"github.com/pkg/errors"
 )
 
@@ -16,7 +15,7 @@ const (
 
 func (u *Usecase) SubmitReimbursement(ctx context.Context, submitReimbursementRequest model.SubmitReimbursementRequest) (resp model.SubmitReimbursementResponse, err error) {
 
-	user, found := auth.GetUserDetailFromCtx(ctx)
+	user, found := authGetUserDetailFromCtx(ctx)
 	if !found {
 		err = errors.Wrap(errors.New("user not found"), "Usecase.TapIn")
 		return

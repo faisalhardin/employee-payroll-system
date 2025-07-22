@@ -12,7 +12,7 @@ type AttendanceRepository interface {
 	RecordAttendance(ctx context.Context, attendance *model.MstAttendance) error
 	GetAttendance(ctx context.Context, params model.MstAttendance) (res model.MstAttendance, err error)
 	ListAttendanceByParams(ctx context.Context, params model.ListAttendanceParams) (res []model.MstAttendance, err error)
-	ateAttendance(ctx context.Context, attendance *model.MstAttendance) (err error)
+	UpdateAttendance(ctx context.Context, attendance *model.MstAttendance) (err error)
 	CreatePayrollPeriod(ctx context.Context, payrolPeriod *model.MstPayrollPeriod) (err error)
 	GetPayrollPeriod(ctx context.Context, id int64) (res model.MstPayrollPeriod, err error)
 	UpdatePayrollPeriod(ctx context.Context, payrolPeriod *model.MstPayrollPeriod) (err error)

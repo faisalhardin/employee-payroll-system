@@ -7,8 +7,8 @@ import (
 
 	"github.com/faisalhardin/employee-payroll-system/internal/entity/constant"
 	"github.com/faisalhardin/employee-payroll-system/internal/entity/model"
-	attendaceDB "github.com/faisalhardin/employee-payroll-system/internal/repo/db/attendance"
-	"github.com/faisalhardin/employee-payroll-system/internal/repo/db/user"
+	attendancerepo "github.com/faisalhardin/employee-payroll-system/internal/entity/repo/db/attendance"
+	userdbrepo "github.com/faisalhardin/employee-payroll-system/internal/entity/repo/db/user"
 	"github.com/faisalhardin/employee-payroll-system/pkg/common/commonerr"
 	"github.com/faisalhardin/employee-payroll-system/pkg/middlewares/auth"
 	"github.com/pkg/errors"
@@ -18,9 +18,13 @@ const (
 	MaxOvertimeHours = 3
 )
 
+var (
+	authGetUserDetailFromCtx = auth.GetUserDetailFromCtx
+)
+
 type Usecase struct {
-	AttendanceDB *attendaceDB.Conn
-	UserDB       *user.Conn
+	AttendanceDB attendancerepo.AttendanceRepository
+	UserDB       userdbrepo.UserRepository
 }
 
 func New(u Usecase) *Usecase {
@@ -29,7 +33,7 @@ func New(u Usecase) *Usecase {
 
 func (u *Usecase) TapIn(ctx context.Context, tapInRequest model.MstAttendance) (resp model.TapInResponse, err error) {
 
-	user, found := auth.GetUserDetailFromCtx(ctx)
+	user, found := authGetUserDetailFromCtx(ctx)
 	if !found {
 		err = errors.Wrap(errors.New("user not found"), "Usecase.TapIn")
 		return
@@ -79,7 +83,7 @@ func isWeekend(t time.Time) bool {
 
 func (u *Usecase) CreatePayrollPeriod(ctx context.Context, payrollPeriodRequest model.PayrollPeriodRequest) (resp model.PayrollPeriodResponse, err error) {
 
-	user, found := auth.GetUserDetailFromCtx(ctx)
+	user, found := authGetUserDetailFromCtx(ctx)
 	if !found {
 		err = errors.Wrap(errors.New("forbidden"), "Usecase.CreatePayrollPeriod")
 		return
@@ -114,7 +118,7 @@ func (u *Usecase) CreatePayrollPeriod(ctx context.Context, payrollPeriodRequest 
 }
 
 func (u *Usecase) SubmitOvertime(ctx context.Context, overtimeRequest model.SubmitOvertimeRequest) (resp model.SubmitOvertimeResponse, err error) {
-	user, found := auth.GetUserDetailFromCtx(ctx)
+	user, found := authGetUserDetailFromCtx(ctx)
 	if !found {
 		err = errors.Wrap(errors.New("forbidden"), "Usecase.CreatePayrollPeriod")
 		return
