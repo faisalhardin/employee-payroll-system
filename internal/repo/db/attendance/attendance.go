@@ -82,7 +82,7 @@ func (c *Conn) UpdateAttendance(ctx context.Context, attendance *model.MstAttend
 
 func (c *Conn) CreatePayrollPeriod(ctx context.Context, payrolPeriod *model.MstPayrollPeriod) (err error) {
 	session := c.DB.MasterDB.Table(MstPayrollPeriodTable)
-	session.InsertOne(payrolPeriod)
+	_, err = session.InsertOne(payrolPeriod)
 	if err != nil {
 		return errors.Wrap(err, "conn.CreatePayrollPeriod")
 	}
@@ -109,7 +109,7 @@ func (c *Conn) UpdatePayrollPeriod(ctx context.Context, payrolPeriod *model.MstP
 
 func (c *Conn) SubmitOvertime(ctx context.Context, overtime *model.TrxOvertime) (err error) {
 	session := c.DB.MasterDB.Table(TrxOvertime)
-	session.InsertOne(overtime)
+	_, err = session.InsertOne(overtime)
 	if err != nil {
 		return errors.Wrap(err, "conn.SubmitOvertime")
 	}
