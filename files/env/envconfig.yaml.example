@@ -12,4 +12,4 @@ jwt_config:
 
 db_config:
   db_master:
-    dsn: "postgresql://user:password@localhost:5432/postgres?sslmode=disable&search_path=public"
+    dsn: "postgresql://user:password@psql_bp:5432/postgres?sslmode=disable&search_path=public"
