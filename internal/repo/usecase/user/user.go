@@ -6,15 +6,17 @@ import (
 
 	"github.com/faisalhardin/employee-payroll-system/internal/config"
 	"github.com/faisalhardin/employee-payroll-system/internal/entity/model"
-	"github.com/faisalhardin/employee-payroll-system/internal/repo/db/user"
 	"github.com/faisalhardin/employee-payroll-system/pkg/middlewares/auth"
 	"github.com/pkg/errors"
+
+	authrepo "github.com/faisalhardin/employee-payroll-system/internal/entity/repo/auth"
+	userdbrepo "github.com/faisalhardin/employee-payroll-system/internal/entity/repo/db/user"
 )
 
 type Usecase struct {
 	Cfg      *config.Config
-	UserDB   *user.Conn
-	AuthRepo *auth.Options
+	UserDB   userdbrepo.UserRepository
+	AuthRepo authrepo.Authenticator
 }
 
 func New(opt *Usecase) *Usecase {
