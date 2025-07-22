@@ -4,7 +4,7 @@ import (
 	"net/http"
 
 	"github.com/faisalhardin/employee-payroll-system/internal/entity/model"
-	"github.com/faisalhardin/employee-payroll-system/internal/repo/usecase/attendance"
+	"github.com/faisalhardin/employee-payroll-system/internal/entity/repo/usecase"
 	"github.com/faisalhardin/employee-payroll-system/pkg/common/binding"
 	commonwriter "github.com/faisalhardin/employee-payroll-system/pkg/common/writer"
 )
@@ -14,7 +14,7 @@ var (
 )
 
 type AttendanceHandler struct {
-	AttendanceUsecase *attendance.Usecase
+	AttendanceUsecase usecase.AttendanceUsecaseRepository
 }
 
 func New(attendanceHandler *AttendanceHandler) *AttendanceHandler {

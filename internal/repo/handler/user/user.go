@@ -4,7 +4,7 @@ import (
 	"net/http"
 
 	"github.com/faisalhardin/employee-payroll-system/internal/entity/model"
-	userUsecase "github.com/faisalhardin/employee-payroll-system/internal/repo/usecase/user"
+	"github.com/faisalhardin/employee-payroll-system/internal/entity/repo/usecase"
 	"github.com/faisalhardin/employee-payroll-system/pkg/common/binding"
 	commonwriter "github.com/faisalhardin/employee-payroll-system/pkg/common/writer"
 )
@@ -14,7 +14,7 @@ var (
 )
 
 type UserHandler struct {
-	UserUsecase *userUsecase.Usecase
+	UserUsecase usecase.UserUsecaseRepository
 }
 
 func New(userHandler *UserHandler) *UserHandler {
