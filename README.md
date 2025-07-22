@@ -53,10 +53,9 @@ make init
 make run
 ```
 
-Docker Setup
+### Docker Run
 ```
-# Using Docker Compose
-docker-compose up -d
+make docker-run
 ```
 
 ## API Documentation

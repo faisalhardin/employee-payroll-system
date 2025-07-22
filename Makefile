@@ -18,13 +18,49 @@ init:
 	cp .env.example .env
 	cp files/env/envconfig.yaml.example files/env/envconfig.yaml 
 
-# Create DB container
-docker-run:
+# Setup environment and run docker
+docker-setup:
+	@echo "Setting up environment..."
+	@if [ ! -f .env ]; then \
+		echo "Copying .env file..."; \
+		cp .env.example .env; \
+	fi
+	@if [ ! -f files/env/envconfig.yaml ]; then \
+		echo "Copying envconfig.yaml file..."; \
+		cp files/env/envconfig.yaml.example files/env/envconfig.yaml; \
+		echo "Updating database host in config..."; \
+		sed -i.bak 's/localhost/psql_bp/g' files/env/envconfig.yaml && rm -f files/env/envconfig.yaml.bak; \
+	fi
+	@echo "Environment setup complete."
+
+# Create and run containers
+docker-run: docker-setup
+	@echo "Starting containers..."
 	@if docker compose up --build 2>/dev/null; then \
 		: ; \
 	else \
 		echo "Falling back to Docker Compose V1"; \
 		docker-compose up --build; \
+	fi
+
+# Build containers without running
+docker-build: docker-setup
+	@echo "Building containers..."
+	@if docker compose build 2>/dev/null; then \
+		: ; \
+	else \
+		echo "Falling back to Docker Compose V1"; \
+		docker-compose build; \
+	fi
+
+# Run containers in detached mode
+docker-run-detached: docker-setup
+	@echo "Starting containers in detached mode..."
+	@if docker compose up -d --build 2>/dev/null; then \
+		: ; \
+	else \
+		echo "Falling back to Docker Compose V1"; \
+		docker-compose up -d --build; \
 	fi
 
 # Shutdown DB container
@@ -67,4 +103,19 @@ watch:
             fi; \
         fi
 
-.PHONY: all build run test clean watch docker-run docker-down itest
+# Show help
+help:
+	@echo "Available commands:"
+	@echo "  make docker-setup      - Copy and configure environment files"
+	@echo "  make docker-build      - Build Docker containers without running them"
+	@echo "  make docker-run        - Set up environment and run containers (interactive mode)"
+	@echo "  make docker-run-detached - Set up environment and run containers (detached mode)"
+	@echo "  make docker-down       - Stop and remove containers"
+	@echo "  make clean            - Remove built binaries"
+	@echo "  make test             - Run tests"
+	@echo "  make itest            - Run integration tests"
+	@echo "  make watch            - Run with live reload (requires air)"
+
+.PHONY: all build run test clean watch docker-run docker-down itest docker-setup docker-build docker-run-detached help
+
+.DEFAULT_GOAL := help

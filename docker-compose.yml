@@ -10,7 +10,7 @@ services:
       - "8080:8080"
     volumes:
       - uploads_data:/app/uploads
-      - ./files/env:/app/files/env 
+      - ./files/env:/app/files/env
     depends_on:
       psql_bp:
         condition: service_healthy
