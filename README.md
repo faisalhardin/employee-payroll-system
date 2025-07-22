@@ -47,6 +47,7 @@ go mod download
 3. Set up environment variables
 ```
 cp files/env/envconfig.yaml.example files/env/envconfig.yaml
+cp .env.example .env
 ```
 4. Start the application
 ```
