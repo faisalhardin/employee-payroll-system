@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/DATA-DOG/go-sqlmock"
 	"github.com/go-xorm/xorm"
 	_ "github.com/lib/pq"
 	"xorm.io/core"
@@ -49,4 +50,13 @@ func generateXormEngineInstance(dsn string) (*xorm.Engine, error) {
 
 	return engine, nil
 
+}
+
+func NewMockDB() (*xorm.Engine, sqlmock.Sqlmock) {
+	db, mock, _ := sqlmock.New()
+
+	mockEngine, _ := xorm.NewEngine("postgres", "postgresql://root:123@localhost:123/test?charset=utf8")
+	mockEngine.DB().DB = db
+
+	return mockEngine, mock
 }

@@ -45,6 +45,10 @@ func (u *Usecase) TapIn(ctx context.Context, tapInRequest model.MstAttendance) (
 	mstAttendace := &model.MstAttendance{
 		IDMstUser:      user.ID,
 		AttendanceDate: tapInRequest.AttendanceDate,
+		CreatedBy: sql.NullInt64{
+			Int64: user.ID,
+			Valid: true,
+		},
 	}
 
 	if isWeekend(mstAttendace.AttendanceDate) {
